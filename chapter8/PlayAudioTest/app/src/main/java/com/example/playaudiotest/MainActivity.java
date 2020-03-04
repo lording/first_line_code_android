@@ -44,7 +44,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initMediaPlayer() {
-        File file = new File(Environment.getExternalStorageDirectory(), "music.mp3");
+        Log.d("MainActivity", "external storage dir is " + Environment.getExternalStorageDirectory());
+        File file = new File("/sdcard/Music", "music.mp3");
         Log.d("MainActivity", "file path is " + file.getPath());
         try {
             mediaPlayer.setDataSource(file.getPath());  //指定音频文件的路径
