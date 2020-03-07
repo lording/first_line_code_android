@@ -24,6 +24,7 @@ import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
+import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 
 import java.lang.reflect.Array;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
         mapView = findViewById(R.id.bmapView);
         baiduMap = mapView.getMap();
+        baiduMap.setMyLocationEnabled(true);
         positionText = findViewById(R.id.position_text_view);
 
         List<String> permissionList = new ArrayList<>();
@@ -98,6 +100,11 @@ public class MainActivity extends AppCompatActivity {
             baiduMap.animateMapStatus(update);
             isFirstLocate = false;
         }
+        MyLocationData.Builder locationBuilder = new MyLocationData.Builder();
+        locationBuilder.latitude(location.getLatitude());
+        locationBuilder.longitude(location.getLongitude());
+        MyLocationData locationData = locationBuilder.build();
+        baiduMap.setMyLocationData(locationData);
     }
 
     @Override
@@ -127,8 +134,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceiveLocation(final BDLocation bdLocation) {
             if (bdLocation.getLocType() == BDLocation.TypeGpsLocation
-                    || bdLocation.getLocType() == BDLocation.TypeNetWorkLocation
-                    || bdLocation.getLocType() == BDLocation.TypeServerError) {
+                    || bdLocation.getLocType() == BDLocation.TypeNetWorkLocation) {
                 navigateTo(bdLocation);
             }
 //            runOnUiThread(new Runnable() {
@@ -173,5 +179,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         mLocationClient.stop();
         mapView.onDestroy();
+        baiduMap.setMyLocationEnabled(false);
     }
 }
