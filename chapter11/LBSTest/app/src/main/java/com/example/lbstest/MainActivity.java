@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 
@@ -60,9 +61,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestLocation() {
+        initLocation();
         mLocationClient.start();
     }
 
+    private void initLocation() {
+        LocationClientOption option = new LocationClientOption();
+        option.setScanSpan(5000);
+        option.setLocationMode(LocationClientOption.LocationMode.Device_Sensors);
+        mLocationClient.setLocOption(option);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -101,10 +109,18 @@ public class MainActivity extends AppCompatActivity {
                         currentPosition.append("GPS");
                     } else if (bdLocation.getLocType() == BDLocation.TypeNetWorkLocation) {
                         currentPosition.append("网络");
+                    } else {
+                        currentPosition.append(bdLocation.getLocType());
                     }
                     positionText.setText(currentPosition);
                 }
             });
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mLocationClient.stop();
     }
 }
