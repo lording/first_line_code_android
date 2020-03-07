@@ -17,7 +17,9 @@ import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
+import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 
 import java.lang.reflect.Array;
@@ -30,13 +32,18 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView positionText;
 
+    private MapView mapView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
         mLocationClient = new LocationClient(getApplicationContext());
         mLocationClient.registerLocationListener(new MyLocationListener());
+        //baidu map
+        SDKInitializer.initialize(getApplicationContext());
+        setContentView(R.layout.activity_main);     //该步骤要在初始化之后调用，不然出错
+
+        mapView = findViewById(R.id.bmapView);
         positionText = findViewById(R.id.position_text_view);
 
         List<String> permissionList = new ArrayList<>();
@@ -125,8 +132,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         mLocationClient.stop();
+        mapView.onDestroy();
     }
 }
