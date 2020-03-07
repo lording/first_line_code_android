@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.TransactionTooLargeException;
+import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,8 +20,11 @@ import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.MapStatusUpdate;
+import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationConfiguration;
+import com.baidu.mapapi.model.LatLng;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -34,6 +38,10 @@ public class MainActivity extends AppCompatActivity {
 
     private MapView mapView;
 
+    private BaiduMap baiduMap;
+
+    private boolean isFirstLocate = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);     //该步骤要在初始化之后调用，不然出错
 
         mapView = findViewById(R.id.bmapView);
+        baiduMap = mapView.getMap();
         positionText = findViewById(R.id.position_text_view);
 
         List<String> permissionList = new ArrayList<>();
@@ -80,6 +89,17 @@ public class MainActivity extends AppCompatActivity {
         mLocationClient.setLocOption(option);
     }
 
+    private void navigateTo(BDLocation location) {
+        if (isFirstLocate) {
+            LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
+            MapStatusUpdate update = MapStatusUpdateFactory.newLatLng(ll);
+            baiduMap.animateMapStatus(update);
+            update = MapStatusUpdateFactory.zoomTo(16f);
+            baiduMap.animateMapStatus(update);
+            isFirstLocate = false;
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
@@ -106,28 +126,33 @@ public class MainActivity extends AppCompatActivity {
     public class MyLocationListener implements BDLocationListener {
         @Override
         public void onReceiveLocation(final BDLocation bdLocation) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    StringBuilder currentPosition = new StringBuilder();
-                    currentPosition.append("纬度:").append(bdLocation.getLatitude()).append("\n");
-                    currentPosition.append("经度:").append(bdLocation.getLongitude()).append("\n");
-                    currentPosition.append("国家:").append(bdLocation.getCountry()).append("\n");
-                    currentPosition.append("省:").append(bdLocation.getProvince()).append("\n");
-                    currentPosition.append("市:").append(bdLocation.getCity()).append("\n");
-                    currentPosition.append("区:").append(bdLocation.getDistrict()).append("\n");
-                    currentPosition.append("街道:").append(bdLocation.getStreet()).append("\n");
-                    currentPosition.append("定位方式:");
-                    if (bdLocation.getLocType() == BDLocation.TypeGpsLocation) {
-                        currentPosition.append("GPS");
-                    } else if (bdLocation.getLocType() == BDLocation.TypeNetWorkLocation) {
-                        currentPosition.append("网络");
-                    } else {
-                        currentPosition.append(bdLocation.getLocType());
-                    }
-                    positionText.setText(currentPosition);
-                }
-            });
+            if (bdLocation.getLocType() == BDLocation.TypeGpsLocation
+                    || bdLocation.getLocType() == BDLocation.TypeNetWorkLocation
+                    || bdLocation.getLocType() == BDLocation.TypeServerError) {
+                navigateTo(bdLocation);
+            }
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    StringBuilder currentPosition = new StringBuilder();
+//                    currentPosition.append("纬度:").append(bdLocation.getLatitude()).append("\n");
+//                    currentPosition.append("经度:").append(bdLocation.getLongitude()).append("\n");
+//                    currentPosition.append("国家:").append(bdLocation.getCountry()).append("\n");
+//                    currentPosition.append("省:").append(bdLocation.getProvince()).append("\n");
+//                    currentPosition.append("市:").append(bdLocation.getCity()).append("\n");
+//                    currentPosition.append("区:").append(bdLocation.getDistrict()).append("\n");
+//                    currentPosition.append("街道:").append(bdLocation.getStreet()).append("\n");
+//                    currentPosition.append("定位方式:");
+//                    if (bdLocation.getLocType() == BDLocation.TypeGpsLocation) {
+//                        currentPosition.append("GPS");
+//                    } else if (bdLocation.getLocType() == BDLocation.TypeNetWorkLocation) {
+//                        currentPosition.append("网络");
+//                    } else {
+//                        currentPosition.append(bdLocation.getLocType());
+//                    }
+//                    positionText.setText(currentPosition);
+//                }
+//            });
         }
     }
 
