@@ -28,6 +28,7 @@ import org.litepal.crud.DataSupport;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -83,11 +84,18 @@ public class ChooseAreaFragment extends Fragment {
                     queryCounties();
                 } else if (currenrtLevel == LEVEL_COUNTY) {
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id", weatherId);
-
-                    startActivity(intent);
-                    getActivity().finish();
+                    if (getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }
+                    else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity)getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
                 }
             }
         });
